@@ -351,3 +351,6 @@ MigrationBackup/
 
 # Test inputs
 Inputs/
+
+# VS Code settings
+.vscode/
