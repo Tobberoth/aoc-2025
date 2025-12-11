@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace AdventOfCode;
 
 public class Day11 : BaseDay
@@ -17,25 +19,38 @@ public class Day11 : BaseDay
             .ForEach(t => _serverRacks.Add(t.Item1, t.Item2));
     }
 
-    Dictionary<string, long> memo = [];
-    public long RoutesToOut(string currentServer)
+    public BigInteger CalculateRoutes(string startServer, string endServer)
     {
-        if (currentServer == "out")
-            return 1;
-        if (memo.ContainsKey(currentServer))
-            return memo[currentServer];
-        long routes = 0;
-        foreach (var next in _serverRacks[currentServer])
-            routes += RoutesToOut(next);
-        memo[currentServer] = routes;
-        return routes;
+        Dictionary<string, BigInteger> memo = [];
+        BigInteger CalculateRoutesRec(string currentServer)
+        {
+            if (currentServer == endServer)
+                return 1;
+            if (currentServer == "out")
+                return 0;
+            if (memo.ContainsKey(currentServer))
+                return memo[currentServer];
+            BigInteger routes = 0;
+            foreach (var next in _serverRacks[currentServer])
+                routes += CalculateRoutesRec(next);
+            memo[currentServer] = routes;
+            return routes;
+        }
+        return CalculateRoutesRec(startServer);
     }
 
     public override ValueTask<string> Solve_1() {
-        return new($"{RoutesToOut("you")}");
+        return new($"{CalculateRoutes("you","out")}");
     }
 
     public override ValueTask<string> Solve_2() {
-        return new("Step 2");
+        var dacToOut = CalculateRoutes("dac", "out");
+        var fftToOut = CalculateRoutes("fft", "out");
+        var dacToFft = CalculateRoutes("dac", "fft");
+        var fftToDac = CalculateRoutes("fft", "dac");
+        var srvToDac = CalculateRoutes("svr", "dac");
+        var srvToFft = CalculateRoutes("svr", "fft");
+        BigInteger sum = (dacToOut * fftToDac * srvToFft) + (fftToOut * dacToFft * srvToDac);
+        return new($"{sum}");
     }
 }
